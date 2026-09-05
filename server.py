@@ -21,7 +21,7 @@ from core import (
 )
 
 ROOT = Path(__file__).resolve().parent
-STATIC = ROOT / 'static'
+STATIC = ROOT
 SESSIONS = {}
 MAX_UPLOAD = 15 * 1024 * 1024
 
@@ -70,7 +70,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == '/':
-            return self.serve_file(STATIC / 'index.html', 'text/html; charset=utf-8')
+            return self.serve_file(ROOT / 'index.html', 'text/html; charset=utf-8')
         if parsed.path.startswith('/static/'):
             target = STATIC / parsed.path[len('/static/'):]
             if '..' in target.parts:

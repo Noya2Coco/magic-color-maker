@@ -1,0 +1,9 @@
+# OpenCV doit être installé via Termux, PAS via pip :
+#   pkg install x11-repo
+#   pkg install opencv python-opencv-python
+#
+# Vérifie ensuite :
+#   python -c "import cv2, numpy; print(cv2.__version__, numpy.__version__)"
+#
+# Pillow est la seule dépendance Python supplémentaire nécessaire à cette variante.
+Pillow>=10.0

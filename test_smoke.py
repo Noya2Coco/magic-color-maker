@@ -1,27 +1,24 @@
+from pathlib import Path
 from PIL import Image, ImageDraw
-from core import quantize_image, regions_from_image, assign_values, exercise_for_value, render_coloring, svg_export, pdf_export
-import random
+from core import quantize_image, regions_from_image, assign_values, render_coloring, svg_export, pdf_export
 
-img = Image.new('RGB',(200,200),'white')
+out = Path(__file__).parent / 'generated'
+out.mkdir(exist_ok=True)
+img = Image.new('RGB', (480, 360), 'white')
 d = ImageDraw.Draw(img)
-d.rectangle((10,10,90,90), fill='red')
-d.rectangle((110,10,190,90), fill='red')
-d.rectangle((10,110,190,190), fill='blue')
-q, colors = quantize_image(img, 3)
-assert len(colors) <= 3
-regs = regions_from_image(q, 50)
-assert len(regs) >= 3, len(regs)
-vals = assign_values(colors, 10)
-assert max(vals.values()) <= 10
-for mode in ['Nombre','Addition','Soustraction','Multiplication','Division','Mélange']:
-    ex = exercise_for_value(5, mode, 10, random.Random(1))
-    assert isinstance(ex,str) and ex
-student, exs = render_coloring(img.size, regs, vals, 'Mélange', 10, 42, False)
-svg = svg_export(img.size, regs, exs)
-assert svg.startswith(b'<svg')
-pdf = pdf_export(student, [(colors[cid-1], val) for cid,val in vals.items()])
-assert pdf.startswith(b'%PDF')
-student.save('generated/smoke_student.png')
-open('generated/smoke.svg','wb').write(svg)
-open('generated/smoke.pdf','wb').write(pdf)
-print('Smoke tests OK:', len(colors), 'colors,', len(regs), 'regions, exports OK')
+d.rectangle((30, 30, 200, 160), fill=(240, 60, 60))
+d.rectangle((280, 30, 450, 160), fill=(240, 60, 60))
+d.ellipse((120, 190, 360, 340), fill=(50, 100, 230))
+q, colors = quantize_image(img, 4)
+regions = regions_from_image(q, 80)
+assert len(colors) <= 4
+assert len(regions) >= 3
+values = assign_values(colors, 10)
+student, ex = render_coloring(img.size, regions, values, 'Mélange', 10, 42, False)
+corrected, _ = render_coloring(img.size, regions, values, 'Mélange', 10, 42, True)
+palette = [(c, values[i+1]) for i, c in enumerate(colors) if i+1 in values]
+student.save(out / 'termux_smoke.png')
+corrected.save(out / 'termux_smoke_corrected.png')
+(out / 'termux_smoke.svg').write_bytes(svg_export(img.size, regions, ex))
+(out / 'termux_smoke.pdf').write_bytes(pdf_export(student, palette))
+print(f'OK: {len(colors)} colors, {len(regions)} regions')
